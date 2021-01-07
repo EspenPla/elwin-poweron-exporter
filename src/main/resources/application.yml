@@ -1,6 +1,6 @@
   client:
     ssl:
         trust-store: classpath:keystore.jks
-        trust-store-password: <>
+        trust-store-password: Sesam1954
         use-ssl: true
         trust-all: false

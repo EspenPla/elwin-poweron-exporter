@@ -1,13 +1,9 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class MeterNumber extends SesamEntity{
-    
     @JsonProperty("PropertyNumber")
     private String propertyNumber;
     
@@ -20,12 +16,8 @@ public class MeterNumber extends SesamEntity{
     @JsonProperty("NetworkTariff")
     private String networkTariff;
 
-    public MeterNumber() {
-        super();
-    }
-
     public String getPropertyNumber() {
-        return propertyNumber;
+        return this.propertyNumber;
     }
 
     public void setPropertyNumber(String propertyNumber) {
@@ -33,7 +25,7 @@ public class MeterNumber extends SesamEntity{
     }
 
     public String getMeterNumber() {
-        return meterNumber;
+        return this.meterNumber;
     }
 
     public void setMeterNumber(String meterNumber) {
@@ -41,7 +33,7 @@ public class MeterNumber extends SesamEntity{
     }
 
     public int getIsSmartMeter() {
-        return isSmartMeter;
+        return this.isSmartMeter;
     }
 
     public void setIsSmartMeter(int isSmartMeter) {
@@ -49,17 +41,10 @@ public class MeterNumber extends SesamEntity{
     }
 
     public String getNetworkTariff() {
-        return networkTariff;
+        return this.networkTariff;
     }
 
     public void setNetworkTariff(String networkTariff) {
         this.networkTariff = networkTariff;
     }
-    
-    
-    
-    
-    
-    
-    
 }

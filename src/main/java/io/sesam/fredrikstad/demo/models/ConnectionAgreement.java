@@ -1,11 +1,8 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class ConnectionAgreement extends SesamEntity {
 
     @JsonProperty("CustomerNumber")
@@ -23,12 +20,8 @@ public class ConnectionAgreement extends SesamEntity {
     @JsonProperty("Status")
     private String agreementStatus;
 
-    public ConnectionAgreement() {
-        super();
-    }
-
     public String getCustomerNumber() {
-        return customerNumber;
+        return this.customerNumber;
     }
 
     public void setCustomerNumber(String customerNumber) {
@@ -36,7 +29,7 @@ public class ConnectionAgreement extends SesamEntity {
     }
 
     public String getPropertyNumber() {
-        return propertyNumber;
+        return this.propertyNumber;
     }
 
     public void setPropertyNumber(String propertyNumber) {
@@ -44,7 +37,7 @@ public class ConnectionAgreement extends SesamEntity {
     }
 
     public String getAgreementStartDate() {
-        return agreementStartDate;
+        return this.agreementStartDate;
     }
 
     public void setAgreementStartDate(String agreementStartDate) {
@@ -52,7 +45,7 @@ public class ConnectionAgreement extends SesamEntity {
     }
 
     public int getNoticeToDeenergise() {
-        return noticeToDeenergise;
+        return this.noticeToDeenergise;
     }
 
     public void setNoticeToDeenergise(int noticeToDeenergise) {
@@ -60,7 +53,7 @@ public class ConnectionAgreement extends SesamEntity {
     }
 
     public String getAgreementStatus() {
-        return agreementStatus;
+        return this.agreementStatus;
     }
 
     public void setAgreementStatus(String agreementStatus) {

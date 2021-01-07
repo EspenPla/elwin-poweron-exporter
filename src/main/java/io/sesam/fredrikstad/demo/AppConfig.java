@@ -6,27 +6,22 @@ import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-/**
- *
- * @author Timur Samkharadze
- */
 @ConfigurationProperties
 @Component
 public class AppConfig {
-
     @Value("${POWERON_SOAP_URL}")
     private String url;
-
+    
+    @Value("${client.ssl.trust-store}")
+    private Resource trustStore;
+    
+    @Value("${client.ssl.trust-store-password}")
+    private String trustStorePassword;
+    
     @Nullable
     public String getUrl() {
         return this.url;
     }
-
-    @Value("${client.ssl.trust-store}")
-    private Resource trustStore;
-
-    @Value("${client.ssl.trust-store-password}")
-    private String trustStorePassword;
 
     @Value("${client.ssl.use-ssl}")
     private boolean useSSL = false;
@@ -36,28 +31,23 @@ public class AppConfig {
 
     @Nullable
     public Resource getTrustStore() {
-        return trustStore;
+        return this.trustStore;
     }
 
     @Nullable
     public String getTrustStorePassword() {
-        return trustStorePassword;
+        return this.trustStorePassword;
     }
 
     public boolean useSSL() {
-        return useSSL;
+        return this.useSSL;
     }
 
     public boolean isTrustAll() {
-        return trustAll;
+        return this.trustAll;
     }
 
-    @Override
     public String toString() {
-        return "AppConfig{" + "url=" + url + ", trustStore=" + trustStore + ", trustStorePassword=" + trustStorePassword + ", useSSL=" + useSSL + ", trustAll=" + trustAll + '}';
+        return "AppConfig{" + "url=" + this.url + ", trustStore=" + this.trustStore + ", trustStorePassword=" + this.trustStorePassword + ", useSSL=" + this.useSSL + ", trustAll=" + this.trustAll + '}';
     }
-    
-    
-    
-    
 }

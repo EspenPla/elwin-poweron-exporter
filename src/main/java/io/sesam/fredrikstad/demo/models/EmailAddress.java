@@ -1,25 +1,17 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class EmailAddress extends SesamEntity{
-
     @JsonProperty(value = "EmailAddress")
     private String emailAddress;
 
     @JsonProperty(value = "CustomerNumber")
     private String customerNumber;
-
-    public EmailAddress() {
-        super();
-    }
     
     public String getEmailAddress() {
-        return emailAddress;
+        return this.emailAddress;
     }
 
     public void setEmailAddress(String emailAddress) {
@@ -27,18 +19,14 @@ public class EmailAddress extends SesamEntity{
     }
 
     public String getCustomerNumber() {
-        return customerNumber;
+        return this.customerNumber;
     }
 
     public void setCustomerNumber(String customerNumber) {
         this.customerNumber = customerNumber;
     }
 
-    @Override
     public String toString() {
-        return "EmailAddress{" + "emailAddress=" + emailAddress + ", customerNumber=" + customerNumber + '}';
+        return "EmailAddress{" + "emailAddress=" + this.emailAddress + ", customerNumber=" + this.customerNumber + '}';
     }
-    
-    
-
 }

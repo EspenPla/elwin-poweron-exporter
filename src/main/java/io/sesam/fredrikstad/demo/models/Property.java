@@ -1,25 +1,17 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class Property extends SesamEntity {
-
     @JsonProperty("PropertyNumber")
     private String propertyNumber;
 
     @JsonProperty("AddressNumber")
     private String addressNumber;
 
-    public Property() {
-        super();
-    }
-
     public String getPropertyNumber() {
-        return propertyNumber;
+        return this.propertyNumber;
     }
 
     public void setPropertyNumber(String propertyNumber) {
@@ -27,11 +19,10 @@ public class Property extends SesamEntity {
     }
 
     public String getAddressNumber() {
-        return addressNumber;
+        return this.addressNumber;
     }
 
     public void setAddressNumber(String addressNumber) {
         this.addressNumber = addressNumber;
     }
-
 }

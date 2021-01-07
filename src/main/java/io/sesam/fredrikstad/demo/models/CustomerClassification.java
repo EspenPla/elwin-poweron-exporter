@@ -1,40 +1,28 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class CustomerClassification  extends SesamEntity{
-    
     @JsonProperty("CustomerNumber")
     private String customerNumber;
     
     @JsonProperty("CTCode")
-    private int ctCode;
-
-    public CustomerClassification() {
-        super();
-    }
+    private String ctCode;
 
     public String getCustomerNumber() {
-        return customerNumber;
+        return this.customerNumber;
     }
 
     public void setCustomerNumber(String customerNumber) {
         this.customerNumber = customerNumber;
     }
 
-    public int getCtCode() {
-        return ctCode;
+    public String getCtCode() {
+        return this.ctCode;
     }
 
-    public void setCtCode(int ctCode) {
+    public void setCtCode(String ctCode) {
         this.ctCode = ctCode;
     }
-    
-    
-    
-    
 }

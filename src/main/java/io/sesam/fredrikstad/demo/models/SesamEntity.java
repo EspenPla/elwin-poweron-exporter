@@ -2,12 +2,7 @@ package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- *
- * @author 100tsa
- */
 public class SesamEntity {
-
     @JsonProperty("_id")
     private String id;
 
@@ -19,11 +14,8 @@ public class SesamEntity {
 
     private String status;
 
-    public SesamEntity() {
-    }
-
     public String getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(String id) {
@@ -31,7 +23,7 @@ public class SesamEntity {
     }
 
     public boolean isDeleted() {
-        return deleted;
+        return this.deleted;
     }
 
     public void setDeleted(boolean deleted) {
@@ -39,7 +31,7 @@ public class SesamEntity {
     }
 
     public String getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setStatus(String status) {
@@ -47,17 +39,14 @@ public class SesamEntity {
     }
 
     public String getOperation() {
-        return operation;
+        return this.operation;
     }
 
     public void setOperation(String operation) {
         this.operation = operation;
     }
-    
-    
-    @Override
-    public String toString() {
-        return "SesamEntity{" + "id=" + id + ", deleted=" + deleted + ", status=" + status + '}';
-    }
 
+    public String toString() {
+        return "SesamEntity{" + "id=" + this.id + ", deleted=" + this.deleted + ", status=" + this.status + '}';
+    }
 }

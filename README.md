@@ -12,7 +12,7 @@ PowerOn sink service used to move data from Elwin to PowerOn
     "environment": {
       "POWERON_SOAP_URL": "https://<host name>/enmac/SOAP"
     },
-    "image": "ohuenno/frdrkstd-demo:latest",
+    "image": "espenplatou/poweron-exporter:0.0.7",
     "port": 8090
   },
   "verify_ssl": true
@@ -64,7 +64,8 @@ PowerOn sink service used to move data from Elwin to PowerOn
     "use_dead_letter_dataset": false,
     "write_retry_delay": 1
   },
-  "batch_size": 1
+  "batch_size": 1,
+  "schedule_interval": 1
 }
 
 ```

@@ -1,11 +1,8 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class CustomerPropertyAssociation extends SesamEntity{
     @JsonProperty("CustomerNumber")
     private String customerNumber;
@@ -34,12 +31,8 @@ public class CustomerPropertyAssociation extends SesamEntity{
     @JsonProperty("LinkAddressReference")
     private String linkAddressReference;
 
-    public CustomerPropertyAssociation() {
-        super();
-    }
-
     public String getCustomerNumber() {
-        return customerNumber;
+        return this.customerNumber;
     }
 
     public void setCustomerNumber(String customerNumber) {
@@ -47,7 +40,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getPropertyNumber() {
-        return propertyNumber;
+        return this.propertyNumber;
     }
 
     public void setPropertyNumber(String propertyNumber) {
@@ -55,7 +48,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getAtCode() {
-        return atCode;
+        return this.atCode;
     }
 
     public void setAtCode(String atCode) {
@@ -63,7 +56,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getUsageStartDate() {
-        return usageStartDate;
+        return this.usageStartDate;
     }
 
     public void setUsageStartDate(String usageStartDate) {
@@ -71,7 +64,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getUsageEndDate() {
-        return usageEndDate;
+        return this.usageEndDate;
     }
 
     public void setUsageEndDate(String usageEndDate) {
@@ -79,7 +72,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getLinkReference() {
-        return linkReference;
+        return this.linkReference;
     }
 
     public void setLinkReference(String linkReference) {
@@ -87,7 +80,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getLinkSystem() {
-        return linkSystem;
+        return this.linkSystem;
     }
 
     public void setLinkSystem(String linkSystem) {
@@ -95,7 +88,7 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getBusinessSource() {
-        return businessSource;
+        return this.businessSource;
     }
 
     public void setBusinessSource(String businessSource) {
@@ -103,14 +96,10 @@ public class CustomerPropertyAssociation extends SesamEntity{
     }
 
     public String getLinkAddressReference() {
-        return linkAddressReference;
+        return this.linkAddressReference;
     }
 
     public void setLinkAddressReference(String linkAddressReference) {
         this.linkAddressReference = linkAddressReference;
     }
-    
-    
-    
-    
 }

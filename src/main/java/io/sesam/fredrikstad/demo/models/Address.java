@@ -1,12 +1,8 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- * Address model elwin data
- *
- * @author 100tsa
- */
 public class Address extends SesamEntity {
 
     @JsonProperty("AddressNumber")
@@ -52,7 +48,7 @@ public class Address extends SesamEntity {
     private String planNumber;
 
     public String getAddressNumber() {
-        return addressNumber;
+        return this.addressNumber;
     }
 
     public void setAddressNumber(String addressNumber) {
@@ -60,7 +56,7 @@ public class Address extends SesamEntity {
     }
 
     public String getPostcode() {
-        return postcode;
+        return this.postcode;
     }
 
     public void setPostcode(String postcode) {
@@ -68,7 +64,7 @@ public class Address extends SesamEntity {
     }
 
     public String getAdministrativeAreaName() {
-        return administrativeAreaName;
+        return this.administrativeAreaName;
     }
 
     public void setAdministrativeAreaName(String administrativeAreaName) {
@@ -76,7 +72,7 @@ public class Address extends SesamEntity {
     }
 
     public String getTownName() {
-        return townName;
+        return this.townName;
     }
 
     public void setTownName(String townName) {
@@ -84,7 +80,7 @@ public class Address extends SesamEntity {
     }
 
     public String getStreetName() {
-        return streetName;
+        return this.streetName;
     }
 
     public void setStreetName(String streetName) {
@@ -92,7 +88,7 @@ public class Address extends SesamEntity {
     }
 
     public String getSecondaryAddressableObject() {
-        return secondaryAddressableObject;
+        return this.secondaryAddressableObject;
     }
 
     public void setSecondaryAddressableObject(String secondaryAddressableObject) {
@@ -100,7 +96,7 @@ public class Address extends SesamEntity {
     }
 
     public String getPrimaryAddressableObject() {
-        return primaryAddressableObject;
+        return this.primaryAddressableObject;
     }
 
     public void setPrimaryAddressableObject(String primaryAddressableObject) {
@@ -108,7 +104,7 @@ public class Address extends SesamEntity {
     }
 
     public String getqSTCode() {
-        return qSTCode;
+        return this.qSTCode;
     }
 
     public void setqSTCode(String qSTCode) {
@@ -116,7 +112,7 @@ public class Address extends SesamEntity {
     }
 
     public String getaFTCode() {
-        return aFTCode;
+        return this.aFTCode;
     }
 
     public void setaFTCode(String aFTCode) {
@@ -124,7 +120,7 @@ public class Address extends SesamEntity {
     }
 
     public String getGridReference() {
-        return gridReference;
+        return this.gridReference;
     }
 
     public void setGridReference(String gridReference) {
@@ -132,7 +128,7 @@ public class Address extends SesamEntity {
     }
 
     public String getLocalityName() {
-        return localityName;
+        return this.localityName;
     }
 
     public void setLocalityName(String localityName) {
@@ -140,7 +136,7 @@ public class Address extends SesamEntity {
     }
 
     public String getGeoPosition() {
-        return geoPosition;
+        return this.geoPosition;
     }
 
     public void setGeoPosition(String geoPosition) {
@@ -148,7 +144,7 @@ public class Address extends SesamEntity {
     }
 
     public String getLotNumber() {
-        return lotNumber;
+        return this.lotNumber;
     }
 
     public void setLotNumber(String lotNumber) {
@@ -156,7 +152,7 @@ public class Address extends SesamEntity {
     }
 
     public String getPlanNumber() {
-        return planNumber;
+        return this.planNumber;
     }
 
     public void setPlanNumber(String planNumber) {
@@ -165,16 +161,6 @@ public class Address extends SesamEntity {
 
     @Override
     public String toString() {
-        return "Address{" + "addressNumber=" + addressNumber + ", postcode=" + postcode + ", administrativeAreaName="
-                + administrativeAreaName + ", townName=" + townName + ", streetName="
-                + streetName + ", secondaryAddressableObject="
-                + secondaryAddressableObject + ", primaryAddressableObject="
-                + primaryAddressableObject + ", qSTCode=" + qSTCode + ", aFTCode="
-                + aFTCode + ", gridReference=" + gridReference + ", localityName=" + localityName + ", geoPosition="
-                + geoPosition + ", lotNumber=" + lotNumber + ", planNumber=" + planNumber + '}';
+        return "Address{" + "addressNumber=" + this.addressNumber + "postcode=" + this.postcode + ", administrativeAreaName=" + this.administrativeAreaName + ", townName=" + this.townName + ", streetName=" + this.streetName + ", secondaryAddressableObject=" + this.secondaryAddressableObject + ", primaryAddressableObject=" + this.primaryAddressableObject + ", qSTCode=" + this.qSTCode + ", aFTCode=" + this.aFTCode + ", gridReference=" + this.gridReference + ", localityName=" + this.localityName + ", geoPosition=" + this.geoPosition + ", lotNumber=" + this.lotNumber + ", planNumber=" + this.planNumber + '}';
     }
-
-    public Address() {
-    }
-
 }

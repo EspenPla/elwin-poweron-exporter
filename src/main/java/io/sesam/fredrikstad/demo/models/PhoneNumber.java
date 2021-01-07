@@ -1,11 +1,8 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class PhoneNumber extends SesamEntity{
     @JsonProperty("PropertyNumber")
     private String propertyNumber;
@@ -22,12 +19,8 @@ public class PhoneNumber extends SesamEntity{
     @JsonProperty("Type")
     private String type;
 
-    public PhoneNumber() {
-        super();
-    }
-
     public String getPropertyNumber() {
-        return propertyNumber;
+        return this.propertyNumber;
     }
 
     public void setPropertyNumber(String propertyNumber) {
@@ -35,7 +28,7 @@ public class PhoneNumber extends SesamEntity{
     }
 
     public String getPhoneNumber() {
-        return phoneNumber;
+        return this.phoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
@@ -43,7 +36,7 @@ public class PhoneNumber extends SesamEntity{
     }
 
     public String getUsageStartDate() {
-        return usageStartDate;
+        return this.usageStartDate;
     }
 
     public void setUsageStartDate(String usageStartDate) {
@@ -51,7 +44,7 @@ public class PhoneNumber extends SesamEntity{
     }
 
     public String getUsageEndDate() {
-        return usageEndDate;
+        return this.usageEndDate;
     }
 
     public void setUsageEndDate(String usageEndDate) {
@@ -59,15 +52,10 @@ public class PhoneNumber extends SesamEntity{
     }
 
     public String getType() {
-        return type;
+        return this.type;
     }
 
     public void setType(String type) {
         this.type = type;
     }
-    
-    
-    
-    
-    
 }

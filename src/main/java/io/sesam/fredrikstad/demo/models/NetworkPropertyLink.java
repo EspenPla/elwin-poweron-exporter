@@ -1,11 +1,8 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class NetworkPropertyLink extends SesamEntity {
 
     @JsonProperty("PropertyNumber")
@@ -27,14 +24,10 @@ public class NetworkPropertyLink extends SesamEntity {
     private String componentAlias;
 
     @JsonProperty("SubQualityID")
-    private char subQualityID;
-
-    public NetworkPropertyLink() {
-        super();
-    }
+    private String subQualityID;
 
     public String getPropertyNumber() {
-        return propertyNumber;
+        return this.propertyNumber;
     }
 
     public void setPropertyNumber(String propertyNumber) {
@@ -42,7 +35,7 @@ public class NetworkPropertyLink extends SesamEntity {
     }
 
     public int getFeederNumber() {
-        return feederNumber;
+        return this.feederNumber;
     }
 
     public void setFeederNumber(int feederNumber) {
@@ -50,7 +43,7 @@ public class NetworkPropertyLink extends SesamEntity {
     }
 
     public String getFeederQualityID() {
-        return feederQualityID;
+        return this.feederQualityID;
     }
 
     public void setFeederQualityID(String feederQualityID) {
@@ -58,7 +51,7 @@ public class NetworkPropertyLink extends SesamEntity {
     }
 
     public int getPhase() {
-        return phase;
+        return this.phase;
     }
 
     public void setPhase(int phase) {
@@ -66,7 +59,7 @@ public class NetworkPropertyLink extends SesamEntity {
     }
 
     public int getNetworkStatus() {
-        return networkStatus;
+        return this.networkStatus;
     }
 
     public void setNetworkStatus(int networkStatus) {
@@ -74,19 +67,18 @@ public class NetworkPropertyLink extends SesamEntity {
     }
 
     public String getComponentAlias() {
-        return componentAlias;
+        return this.componentAlias;
     }
 
     public void setComponentAlias(String componentAlias) {
         this.componentAlias = componentAlias;
     }
 
-    public char getSubQualityID() {
-        return subQualityID;
+    public String getSubQualityID() {
+        return this.subQualityID;
     }
 
-    public void setSubQualityID(char subQualityID) {
+    public void setSubQualityID(String subQualityID) {
         this.subQualityID = subQualityID;
     }
-
 }

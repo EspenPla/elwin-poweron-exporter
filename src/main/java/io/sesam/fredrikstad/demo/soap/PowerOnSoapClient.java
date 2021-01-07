@@ -1,44 +1,52 @@
 package io.sesam.fredrikstad.demo.soap;
 
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import io.sesam.fredrikstad.demo.AppConfig;
 import io.sesam.fredrikstad.demo.models.Address;
 import io.sesam.fredrikstad.demo.models.ConnectionAgreement;
 import io.sesam.fredrikstad.demo.models.Customer;
 import io.sesam.fredrikstad.demo.models.CustomerClassification;
 import io.sesam.fredrikstad.demo.models.CustomerPropertyAssociation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.sesam.fredrikstad.demo.models.EmailAddress;
 import io.sesam.fredrikstad.demo.models.MeterNumber;
 import io.sesam.fredrikstad.demo.models.NetworkPropertyLink;
 import io.sesam.fredrikstad.demo.models.PhoneNumber;
 import io.sesam.fredrikstad.demo.models.Property;
 import io.sesam.fredrikstad.demo.models.PropertyClassification;
-import java.security.cert.X509Certificate;
+import io.sesam.fredrikstad.demo.soap.OperationException;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.security.cert.X509Certificate;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
+import org.springframework.ws.client.core.WebServiceMessageCallback;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 import org.springframework.ws.soap.client.core.SoapActionCallback;
+import org.springframework.ws.transport.WebServiceMessageSender;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender.RemoveSoapHeadersInterceptor;
 import poweron.wsdl.AddressItemStc;
 import poweron.wsdl.AddressListStc;
 import poweron.wsdl.Addresses;
@@ -109,23 +117,22 @@ import poweron.wsdl.TelephoneNumbersStc;
 
 /**
  * Simple SoapService client for Power ON customer inbound messages service
- *
- * @author 100tsa
  */
 @Component
 public class PowerOnSoapClient extends WebServiceGatewaySupport {
 
     private static final ObjectFactory FACTORY = new ObjectFactory();
-    private static final Logger LOG = LoggerFactory.getLogger(PowerOnSoapClient.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(io.sesam.fredrikstad.demo.soap.PowerOnSoapClient.class);
+    
+    
     private WebServiceTemplate template;
-
+    
     @Autowired
     AppConfig config;
-
+    
     @PostConstruct
     public void init() throws Exception {
-        this.template = this.buildWebServiceTemplate();
+        this.template = buildWebServiceTemplate();
     }
 
     /**
@@ -136,14 +143,14 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
     public void processEmailAddressList(List<EmailAddress> input) {
         EmailAddresses soapMessage = FACTORY.createEmailAddresses();
         EmailAddressesStc emailAddressesPlaceholder = FACTORY.createEmailAddressesStc();
-        emailAddressesPlaceholder.setOperationType("I");
-        if (1 == input.size()) {
-            emailAddressesPlaceholder.setRealTime(FACTORY.createEmailAddressesStcRealTime(1));
-        }
+        if (1 == input.size()) 
+            emailAddressesPlaceholder.setRealTime(FACTORY.createEmailAddressesStcRealTime(Integer.valueOf(1))); 
+        
         EmailAddressListStc emailList = FACTORY.createEmailAddressListStc();
         List<EmailAddressItemStc> emailAddressStc = emailList.getEmailAddressStc();
 
         input.stream().map((emailAddress) -> {
+            emailAddressesPlaceholder.setOperationType(emailAddress.getOperation());
             EmailAddressItemStc item = FACTORY.createEmailAddressItemStc();
             item.setCustomerNumber(emailAddress.getCustomerNumber());
             item.setEmailAddress(emailAddress.getEmailAddress());
@@ -156,7 +163,7 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         EmailAddressesResponse res = (EmailAddressesResponse) template.marshalSendAndReceive(config.getUrl(), soapMessage,
                 new SoapActionCallback("Customer/EmailAddresses"));
         EmailAddressesResponseStc innerRes = res.getEmailAddressesResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
         if (isNotOk(innerRes.getStatus())) {
             throw new OperationException(innerRes.getTransactionErrors());
         }
@@ -171,13 +178,12 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
     public void processAddresses(List<Address> input) {
         Addresses addresses = FACTORY.createAddresses();
         AddressesStc addressesStc = FACTORY.createAddressesStc();
-        addressesStc.setOperationType("I");
-        if (1 == input.size()) {
-            addressesStc.setRealTime(FACTORY.createAddressesStcRealTime(1));
-        }
+        if (1 == input.size()) 
+            addressesStc.setRealTime(FACTORY.createAddressesStcRealTime(Integer.valueOf(1)));
         AddressListStc addressListStc = FACTORY.createAddressListStc();
         List<AddressItemStc> addressStc = addressListStc.getAddressStc();
         input.stream().map((address) -> {
+            addressesStc.setOperationType(address.getOperation());
             AddressItemStc item = FACTORY.createAddressItemStc();
             item.setAddressNumber(address.getAddressNumber());
             item.setPostcode(FACTORY.createAddressItemStcPostcode(address.getPostcode()));
@@ -194,19 +200,15 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
             item.setLotNumber(FACTORY.createAddressItemStcLotNumber(address.getLotNumber()));
             item.setPlanNumber(FACTORY.createAddressItemStcPlanNumber(address.getPlanNumber()));
             return item;
-        }).forEachOrdered((item) -> {
-            addressStc.add(item);
-        });
+        }).forEachOrdered(item -> addressStc.add(item));
         addressesStc.setAddressList(addressListStc);
         addresses.setAddressesStc(addressesStc);
 
-        AddressesResponse res = (AddressesResponse) template.marshalSendAndReceive(config.getUrl(), addresses,
-                new SoapActionCallback("Customer/Addresses"));
+        AddressesResponse res = (AddressesResponse)this.template.marshalSendAndReceive(this.config.getUrl(), addresses, (WebServiceMessageCallback)new SoapActionCallback("Customer/Addresses"));
         AddressesResponseStc innerRes = res.getAddressesResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
-        if (isNotOk(innerRes.getStatus())) {
-            throw new OperationException(innerRes.getTransactionErrors());
-        }
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
+        if (isNotOk(innerRes.getStatus()))
+            throw new OperationException(innerRes.getTransactionErrors()); 
     }
 
     /**
@@ -217,41 +219,31 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
     public void processConnectionAgreements(List<ConnectionAgreement> input) {
         ConnectionAgreements connectionAgreements = FACTORY.createConnectionAgreements();
         ConnectionAgreementsStc connectionAgreementsStc = FACTORY.createConnectionAgreementsStc();
-
-        connectionAgreementsStc.setOperationType("I");
-
         ConnectionAgreementListStc connectionAgreementListStc = FACTORY.createConnectionAgreementListStc();
         List<ConnectionAgreementItemStc> agreements = connectionAgreementListStc.getConnectionAgreementStc();
 
         input.stream().map((conAgreement) -> {
+            connectionAgreementsStc.setOperationType(conAgreement.getOperation());
             ConnectionAgreementItemStc item = FACTORY.createConnectionAgreementItemStc();
-            if (!conAgreement.getAgreementStartDate().isEmpty()) {
+            if (null != conAgreement.getAgreementStartDate() && !conAgreement.getAgreementStartDate().isEmpty()) 
                 try {
-                    item.setAgreementStartDate(FACTORY.createConnectionAgreementItemStcAgreementStartDate(
-                            this.parseDateStringToXmlGregorianCalendar(conAgreement.getAgreementStartDate(), null)));
+                    item.setAgreementStartDate(FACTORY.createConnectionAgreementItemStcAgreementStartDate(parseDateStringToXmlGregorianCalendar(conAgreement.getAgreementStartDate(), null)));
                 } catch (DatatypeConfigurationException ex) {
                     LOG.error("Couldn't parse date {} to XMLGregorianCalendar", conAgreement.getAgreementStartDate());
                     LOG.error(ex.getMessage());
                 }
-            }
-            item.setCustomerNumber(FACTORY.createConnectionAgreementItemStcCustomerNumber(
-                    conAgreement.getCustomerNumber()));
-            item.setNoticeToDeenergise(FACTORY.createConnectionAgreementItemStcNoticeToDeenergise(
-                    conAgreement.getNoticeToDeenergise()));
-            item.setPropertyNumber(FACTORY.createConnectionAgreementItemStcPropertyNumber(
-                    conAgreement.getPropertyNumber()));
+            
+            item.setCustomerNumber(FACTORY.createConnectionAgreementItemStcCustomerNumber(conAgreement.getCustomerNumber()));
+            item.setNoticeToDeenergise(FACTORY.createConnectionAgreementItemStcNoticeToDeenergise(Integer.valueOf(conAgreement.getNoticeToDeenergise())));
+            item.setPropertyNumber(FACTORY.createConnectionAgreementItemStcPropertyNumber(conAgreement.getPropertyNumber()));
             return item;
-        }).forEachOrdered((item) -> {
-            agreements.add(item);
-        });
+        }).forEachOrdered(item -> agreements.add(item));
         connectionAgreementsStc.setConnectionAgreementList(connectionAgreementListStc);
         connectionAgreements.setConnectionAgreementsStc(connectionAgreementsStc);
 
-        ConnectionAgreementsResponse res
-                = (ConnectionAgreementsResponse) template.marshalSendAndReceive(config.getUrl(), connectionAgreements,
-                        new SoapActionCallback("Customer/ConnectionAgreements"));
+        ConnectionAgreementsResponse res = (ConnectionAgreementsResponse)this.template.marshalSendAndReceive(this.config.getUrl(), connectionAgreements, (WebServiceMessageCallback)new SoapActionCallback("Customer/ConnectionAgreements"));
         ConnectionAgreementsResponseStc innerRes = res.getConnectionAgreementsResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
         if (isNotOk(innerRes.getStatus())) {
             throw new OperationException(innerRes.getTransactionErrors());
         }
@@ -266,61 +258,51 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         CustomerPropertyAssociations customerPropertyAssociations = FACTORY.createCustomerPropertyAssociations();
         CustomerPropertyAssociationsStc customerPropertyAssociationsStc = FACTORY.createCustomerPropertyAssociationsStc();
 
-        customerPropertyAssociationsStc.setOperationType("I");
         if (1 == input.size()) {
-            customerPropertyAssociationsStc.setRealTime(FACTORY.createCustomerPropertyAssociationsStcRealTime(1));
+            customerPropertyAssociationsStc.setRealTime(FACTORY.createCustomerPropertyAssociationsStcRealTime(Integer.valueOf(1)));
         }
 
         CustomerPropertyAssociationListStc customerPropertyAssociationListStc = FACTORY.createCustomerPropertyAssociationListStc();
         List<CustomerPropertyAssociationItemStc> customerPropertyAssociationStc = customerPropertyAssociationListStc.getCustomerPropertyAssociationStc();
 
         input.stream().map((inCustPropAssoc) -> {
+            customerPropertyAssociationsStc.setOperationType(inCustPropAssoc.getOperation());
             CustomerPropertyAssociationItemStc item = FACTORY.createCustomerPropertyAssociationItemStc();
 
             item.setCustomerNumber(inCustPropAssoc.getCustomerNumber());
             item.setPropertyNumber(inCustPropAssoc.getPropertyNumber());
             item.setATCode(FACTORY.createCustomerPropertyAssociationItemStcATCode(inCustPropAssoc.getAtCode()));
 
-            if (null != inCustPropAssoc.getUsageStartDate() && !inCustPropAssoc.getUsageStartDate().isEmpty()) {
+            if (null != inCustPropAssoc.getUsageStartDate() && !inCustPropAssoc.getUsageStartDate().isEmpty()) 
                 try {
-                    item.setUsageStartDate(FACTORY.createCustomerPropertyAssociationItemStcUsageStartDate(
-                            this.parseDateStringToXmlGregorianCalendar(inCustPropAssoc.getUsageStartDate(), null)));
+                    item.setUsageStartDate(FACTORY.createCustomerPropertyAssociationItemStcUsageStartDate(parseDateStringToXmlGregorianCalendar(inCustPropAssoc.getUsageStartDate(), null)));
                 } catch (DatatypeConfigurationException ex) {
                     LOG.warn("Couldn't parse date {} to XMLGregorianCalendar", inCustPropAssoc.getUsageStartDate());
                     LOG.warn(ex.getMessage());
                 }
-            }
+            
 
             if (null != inCustPropAssoc.getUsageEndDate() && !inCustPropAssoc.getUsageEndDate().isEmpty()) {
                 try {
-                    item.setUsageEndDate(FACTORY.createCustomerPropertyAssociationItemStcUsageEndDate(
-                            this.parseDateStringToXmlGregorianCalendar(inCustPropAssoc.getUsageEndDate(), null)));
+                    item.setUsageEndDate(FACTORY.createCustomerPropertyAssociationItemStcUsageEndDate(parseDateStringToXmlGregorianCalendar(inCustPropAssoc.getUsageEndDate(), null)));
                 } catch (DatatypeConfigurationException ex) {
                     LOG.warn("Couldn't parse date {} to XMLGregorianCalendar", inCustPropAssoc.getUsageStartDate());
                     LOG.warn(ex.getMessage());
                 }
             }
-            item.setLinkReference(FACTORY.createCustomerPropertyAssociationItemStcLinkReference(
-                    inCustPropAssoc.getLinkReference()));
-            item.setLinkSystem(FACTORY.createCustomerPropertyAssociationItemStcLinkSystem(
-                    inCustPropAssoc.getLinkSystem()));
-            item.setBusinessSource(FACTORY.createCustomerPropertyAssociationItemStcBusinessSource(
-                    inCustPropAssoc.getBusinessSource()));
-            item.setLinkAddressReference(FACTORY.createCustomerPropertyAssociationItemStcLinkAddressReference(
-                    inCustPropAssoc.getLinkAddressReference()));
+            item.setLinkReference(FACTORY.createCustomerPropertyAssociationItemStcLinkReference(inCustPropAssoc.getLinkReference()));
+            item.setLinkSystem(FACTORY.createCustomerPropertyAssociationItemStcLinkSystem(inCustPropAssoc.getLinkSystem()));
+            item.setBusinessSource(FACTORY.createCustomerPropertyAssociationItemStcBusinessSource(inCustPropAssoc.getBusinessSource()));
+            item.setLinkAddressReference(FACTORY.createCustomerPropertyAssociationItemStcLinkAddressReference(inCustPropAssoc.getLinkAddressReference()));
             return item;
-        }).forEachOrdered((item) -> {
-            customerPropertyAssociationStc.add(item);
-        });
+        }).forEachOrdered(item -> customerPropertyAssociationStc.add(item));
         customerPropertyAssociationsStc.setCustomerPropertyAssociationList(customerPropertyAssociationListStc);
         customerPropertyAssociations.setCustomerPropertyAssociationsStc(customerPropertyAssociationsStc);
 
-        CustomerPropertyAssociationsResponse res
-                = (CustomerPropertyAssociationsResponse) template.marshalSendAndReceive(
-                        config.getUrl(), customerPropertyAssociations,
-                        new SoapActionCallback("Customer/CustomerPropertyAssociations"));
+        CustomerPropertyAssociationsResponse res = (CustomerPropertyAssociationsResponse)this.template.marshalSendAndReceive(this.config
+        .getUrl(), customerPropertyAssociations, (WebServiceMessageCallback)new SoapActionCallback("Customer/CustomerPropertyAssociations"));
         CustomerPropertyAssociationsResponseStc innerRes = res.getCustomerPropertyAssociationsResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
         if (isNotOk(innerRes.getStatus())) {
             throw new OperationException(innerRes.getTransactionErrors());
         }
@@ -335,35 +317,31 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         Customers customers = FACTORY.createCustomers();
         CustomersStc customersStc = FACTORY.createCustomersStc();
 
-        customersStc.setOperationType("I");
         if (1 == input.size()) {
-            customersStc.setRealTime(FACTORY.createCustomersStcRealTime(1));
+            customersStc.setRealTime(FACTORY.createCustomersStcRealTime(Integer.valueOf(1)));
         }
 
         CustomerListStc customerListStc = FACTORY.createCustomerListStc();
         List<CustomerItemStc> customerList = customerListStc.getCustomerStc();
 
         input.stream().map((customer) -> {
+            customersStc.setOperationType(customer.getOperation());
             CustomerItemStc item = FACTORY.createCustomerItemStc();
             item.setCustomerNumber(customer.getCustomerNumber());
             item.setCustomerID(FACTORY.createCustomerItemStcCustomerID(customer.getCustomerId()));
             item.setForeNames(FACTORY.createCustomerItemStcForeNames(customer.getForeName()));
             item.setName(FACTORY.createCustomerItemStcName(customer.getSurName()));
             return item;
-        }).forEachOrdered((item) -> {
-            customerList.add(item);
-        });
+        }).forEachOrdered(item -> customerList.add(item));
         customersStc.setCustomerList(customerListStc);
         customers.setCustomersStc(customersStc);
 
-        CustomersResponse res = (CustomersResponse) template.marshalSendAndReceive(config.getUrl(), customers,
-                new SoapActionCallback("Customer/Customers"));
+        CustomersResponse res = (CustomersResponse)this.template.marshalSendAndReceive(this.config.getUrl(), customers, (WebServiceMessageCallback)new SoapActionCallback("Customer/Customers"));
         CustomersResponseStc innerRes = res.getCustomersResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
-        if (isNotOk(innerRes.getStatus())) {
-            throw new OperationException(innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
+        if (isNotOk(innerRes.getStatus()))
+            throw new OperationException(innerRes.getTransactionErrors()); 
         }
-    }
 
     /**
      * Insert/update customer classifications
@@ -374,31 +352,28 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         CustomerClassifications customerClassifications = FACTORY.createCustomerClassifications();
         CustomerClassificationsStc customerClassificationsStc = FACTORY.createCustomerClassificationsStc();
 
-        customerClassificationsStc.setOperationType("I");
         if (1 == input.size()) {
-            customerClassificationsStc.setRealTime(FACTORY.createCustomerClassificationsStcRealTime(1));
+            customerClassificationsStc.setRealTime(FACTORY.createCustomerClassificationsStcRealTime(Integer.valueOf(1)));
         }
 
         CustomerClassificationListStc customerClassificationListStc = FACTORY.createCustomerClassificationListStc();
         List<CustomerClassificationItemStc> customerClassificationList = customerClassificationListStc.getCustomerClassificationStc();
 
         input.stream().map((cusClassifications) -> {
+            customerClassificationsStc.setOperationType(cusClassifications.getOperation());
             CustomerClassificationItemStc item = FACTORY.createCustomerClassificationItemStc();
             item.setCustomerNumber(cusClassifications.getCustomerNumber());
             item.setCTCode(FACTORY.createCustomerClassificationItemStcCTCode(String.valueOf(cusClassifications.getCtCode())));
             return item;
-        }).forEachOrdered((item) -> {
-            customerClassificationList.add(item);
-        });
+        }).forEachOrdered(item -> customerClassificationList.add(item));
         customerClassificationsStc.setCustomerClassificationList(customerClassificationListStc);
         customerClassifications.setCustomerClassificationsStc(customerClassificationsStc);
 
-        CustomerClassificationsResponse res = (CustomerClassificationsResponse) template.marshalSendAndReceive(
-                config.getUrl(), customerClassifications,
-                new SoapActionCallback("Customer/CustomerClassifications"));
+        CustomerClassificationsResponse res = (CustomerClassificationsResponse)this.template.marshalSendAndReceive(this.config
+        .getUrl(), customerClassifications, (WebServiceMessageCallback)new SoapActionCallback("Customer/CustomerClassifications"));
         CustomerClassificationsResponseStc innerRes = res.getCustomerClassificationsResponseStc();
 
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
         if (isNotOk(innerRes.getStatus())) {
             throw new OperationException(innerRes.getTransactionErrors());
         }
@@ -413,15 +388,15 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         MeterNumbers meterNumbers = FACTORY.createMeterNumbers();
         MeterNumbersStc meterNumbersStc = FACTORY.createMeterNumbersStc();
 
-        meterNumbersStc.setOperationType("I");
         if (1 == input.size()) {
-            meterNumbersStc.setRealTime(FACTORY.createMeterNumbersStcRealTime(1));
+            meterNumbersStc.setRealTime(FACTORY.createMeterNumbersStcRealTime(Integer.valueOf(1))); 
         }
 
         MeterNumberListStc meterNumberListStc = FACTORY.createMeterNumberListStc();
         List<MeterNumberItemStc> meterNumberStcList = meterNumberListStc.getMeterNumberStc();
 
         input.stream().map((meterNumber) -> {
+            meterNumbersStc.setOperationType(meterNumber.getOperation());
             MeterNumberItemStc item = FACTORY.createMeterNumberItemStc();
             item.setPropertyNumber(meterNumber.getPropertyNumber());
             item.setMeterNumber(FACTORY.createMeterNumberItemStcMeterNumber(meterNumber.getMeterNumber()));
@@ -429,30 +404,25 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
             item.setIsSmartMeter(FACTORY.createMeterNumberItemStcIsSmartMeter(meterNumber.getIsSmartMeter()));
             item.setNetworkTariff(FACTORY.createMeterNumberItemStcNetworkTariff(meterNumber.getNetworkTariff()));
             return item;
-        }).forEachOrdered((item) -> {
-            meterNumberStcList.add(item);
-        });
+        }).forEachOrdered(item -> meterNumberStcList.add(item));
 
         meterNumbersStc.setMeterNumberList(meterNumberListStc);
         meterNumbers.setMeterNumbersStc(meterNumbersStc);
 
-        MeterNumbersResponse res = (MeterNumbersResponse) template.marshalSendAndReceive(
-                config.getUrl(), meterNumbers,
-                new SoapActionCallback("Customer/MeterNumbers"));
+        MeterNumbersResponse res = (MeterNumbersResponse)this.template.marshalSendAndReceive(this.config
+        .getUrl(), meterNumbers, (WebServiceMessageCallback)new SoapActionCallback("Customer/MeterNumbers"));
         MeterNumbersResponseStc innerRes = res.getMeterNumbersResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
         if (isNotOk(innerRes.getStatus())) {
-            if (innerRes.getStatus() == 2002) {
+            if (innerRes.getStatus() == 2002 && meterNumbersStc.getOperationType().equals("Insert")) {
                 meterNumbersStc.setOperationType("U");
-                res = (MeterNumbersResponse) template.marshalSendAndReceive(
-                        config.getUrl(), meterNumbers,
-                        new SoapActionCallback("Customer/MeterNumbers"));
+                res = (MeterNumbersResponse)this.template.marshalSendAndReceive(this.config
+                    .getUrl(), meterNumbers, (WebServiceMessageCallback)new SoapActionCallback("Customer/MeterNumbers"));
                 innerRes = res.getMeterNumbersResponseStc();
                 LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
 
-                if (isNotOk(innerRes.getStatus())) {
+                if (isNotOk(innerRes.getStatus())) 
                     throw new OperationException(innerRes.getTransactionErrors());
-                }
                 return;
             }
             throw new OperationException(innerRes.getTransactionErrors());
@@ -468,15 +438,15 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         Properties properties = FACTORY.createProperties();
         PropertiesStc propertiesStc = FACTORY.createPropertiesStc();
 
-        propertiesStc.setOperationType("I");
         if (1 == input.size()) {
-            propertiesStc.setRealTime(FACTORY.createPropertiesStcRealTime(1));
+            propertiesStc.setRealTime(FACTORY.createPropertiesStcRealTime(Integer.valueOf(1))); 
         }
 
         PropertyListStc propertyListStc = FACTORY.createPropertyListStc();
         List<PropertyItemStc> propertyStcList = propertyListStc.getPropertyStc();
 
         input.forEach((property) -> {
+            propertiesStc.setOperationType(property.getOperation());
             PropertyItemStc item = FACTORY.createPropertyItemStc();
             item.setAddressNumber(property.getAddressNumber());
             item.setPropertyNumber(property.getPropertyNumber());
@@ -486,15 +456,13 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         propertiesStc.setPropertyList(propertyListStc);
         properties.setPropertiesStc(propertiesStc);
 
-        PropertiesResponse res = (PropertiesResponse) template.marshalSendAndReceive(config.getUrl(), properties,
-                new SoapActionCallback("Customer/Properties"));
+        PropertiesResponse res = (PropertiesResponse)this.template.marshalSendAndReceive(this.config.getUrl(), properties, (WebServiceMessageCallback)new SoapActionCallback("Customer/Properties"));
 
         PropertiesResponseStc innerRes = res.getPropertiesResponseStc();
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
-        if (isNotOk(innerRes.getStatus())) {
-            throw new OperationException(innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
+        if (isNotOk(innerRes.getStatus()))
+            throw new OperationException(innerRes.getTransactionErrors()); 
         }
-    }
 
     /**
      * Insert/update property classifications
@@ -505,34 +473,40 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         PropertyClassifications propertyClassifications = FACTORY.createPropertyClassifications();
         PropertyClassificationsStc propertyClassificationsStc = FACTORY.createPropertyClassificationsStc();
 
-        propertyClassificationsStc.setOperationType("I");
         if (1 == input.size()) {
-            propertyClassificationsStc.setRealTime(FACTORY.createPropertyClassificationsStcRealTime(1));
+            propertyClassificationsStc.setRealTime(FACTORY.createPropertyClassificationsStcRealTime(Integer.valueOf(1))); 
         }
 
         PropertyClassificationListStc propertyClassificationListStc = FACTORY.createPropertyClassificationListStc();
         List<PropertyClassificationItemStc> propertyClassificationStcList = propertyClassificationListStc.getPropertyClassificationStc();
 
         input.stream().map((propertyClassification) -> {
+            propertyClassificationsStc.setOperationType(propertyClassification.getOperation());
             PropertyClassificationItemStc item = FACTORY.createPropertyClassificationItemStc();
             item.setPropertyNumber(propertyClassification.getPropertyNumber());
             item.setPTCode(FACTORY.createPropertyClassificationItemStcPTCode(String.valueOf(propertyClassification.getPtCode())));
             return item;
-        }).forEachOrdered((item) -> {
-            propertyClassificationStcList.add(item);
-        });
+        }).forEachOrdered(item -> propertyClassificationStcList.add(item));
 
         propertyClassificationsStc.setPropertyClassificationList(propertyClassificationListStc);
         propertyClassifications.setPropertyClassificationsStc(propertyClassificationsStc);
 
-        PropertyClassificationsResponse res = (PropertyClassificationsResponse) template.marshalSendAndReceive(config.getUrl(), propertyClassifications,
-                new SoapActionCallback("Customer/PropertyClassifications"));
+        PropertyClassificationsResponse res = (PropertyClassificationsResponse)this.template.marshalSendAndReceive(this.config.getUrl(), propertyClassifications, (WebServiceMessageCallback)new SoapActionCallback("Customer/PropertyClassifications"));
         PropertyClassificationsResponseStc innerRes = res.getPropertyClassificationsResponseStc();
 
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
-        if (isNotOk(innerRes.getStatus())) {
-            throw new OperationException(innerRes.getTransactionErrors());
-        }
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
+        if (isNotOk(innerRes.getStatus()))
+            if (1605 == innerRes.getStatus()) {
+                LOG.info("Error while inserting property into database {} trying to update instead of", innerRes.getTransactionErrors());
+                propertyClassificationsStc.setOperationType("Update");
+                res = (PropertyClassificationsResponse)this.template.marshalSendAndReceive(this.config.getUrl(), propertyClassifications, (WebServiceMessageCallback)new SoapActionCallback("Customer/PropertyClassifications"));
+                innerRes = res.getPropertyClassificationsResponseStc();
+                if (isNotOk(innerRes.getStatus()))
+                throw new OperationException(innerRes.getTransactionErrors()); 
+                LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
+            } else {
+                throw new OperationException(innerRes.getTransactionErrors());
+            } 
     }
 
     /**
@@ -544,15 +518,15 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         TelephoneNumbers telephoneNumbers = FACTORY.createTelephoneNumbers();
         TelephoneNumbersStc telephoneNumbersStc = FACTORY.createTelephoneNumbersStc();
 
-        telephoneNumbersStc.setOperationType("I");
         if (1 == input.size()) {
-            telephoneNumbersStc.setRealTime(FACTORY.createTelephoneNumbersStcRealTime(1));
+            telephoneNumbersStc.setRealTime(FACTORY.createTelephoneNumbersStcRealTime(Integer.valueOf(1))); 
         }
 
         TelephoneNumberListStc telephoneNumberListStc = FACTORY.createTelephoneNumberListStc();
         List<TelephoneNumberItemStc> telephoneNumberStcList = telephoneNumberListStc.getTelephoneNumberStc();
 
         input.stream().map((phoneNumber) -> {
+            telephoneNumbersStc.setOperationType(phoneNumber.getOperation());
             TelephoneNumberItemStc item = FACTORY.createTelephoneNumberItemStc();
             item.setPropertyNumber(phoneNumber.getPropertyNumber());
             item.setTelephoneNumber(phoneNumber.getPhoneNumber());
@@ -574,9 +548,7 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
             }
             item.setType(FACTORY.createTelephoneNumberItemStcType(phoneNumber.getType()));
             return item;
-        }).forEachOrdered((item) -> {
-            telephoneNumberStcList.add(item);
-        });
+        }).forEachOrdered(item -> telephoneNumberStcList.add(item));
 
         telephoneNumbersStc.setTelephoneNumberList(telephoneNumberListStc);
         telephoneNumbers.setTelephoneNumbersStc(telephoneNumbersStc);
@@ -589,7 +561,6 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
         if (isNotOk(innerRes.getStatus())) {
             throw new OperationException(innerRes.getTransactionErrors() + " " + innerRes.getErrorMsg());
         }
-
     }
 
     /**
@@ -602,7 +573,7 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
 
         networkPropertyLinksStc.setOperationType(input.get(0).getOperation());
         if (1 == input.size()) {
-            networkPropertyLinksStc.setRealTime(FACTORY.createNetworkPropertyLinksStcRealTime(1));
+            networkPropertyLinksStc.setRealTime(FACTORY.createNetworkPropertyLinksStcRealTime(Integer.valueOf(1))); 
         }
 
         NetworkPropertyLinkListStc networkPropertyLinkListStc = FACTORY.createNetworkPropertyLinkListStc();
@@ -614,37 +585,32 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
             item.setFeederNumber(FACTORY.createNetworkPropertyLinkItemStcFeederNumber(String.valueOf(networkPropertyLink.getFeederNumber())));
             item.setFeedQualityID(FACTORY.createNetworkPropertyLinkItemStcFeedQualityID(networkPropertyLink.getFeederQualityID()));
             item.setPhase(FACTORY.createNetworkPropertyLinkItemStcPhase(String.valueOf(networkPropertyLink.getPhase())));
-            item.setNetworkStatus(FACTORY.createNetworkPropertyLinkItemStcNetworkStatus(networkPropertyLink.getNetworkStatus()));
+            item.setNetworkStatus(FACTORY.createNetworkPropertyLinkItemStcNetworkStatus(Integer.valueOf(networkPropertyLink.getNetworkStatus())));
             item.setComponentAlias(FACTORY.createNetworkPropertyLinkItemStcComponentAlias(networkPropertyLink.getComponentAlias()));
             item.setSubQualityID(FACTORY.createNetworkPropertyLinkItemStcSubQualityID(String.valueOf(networkPropertyLink.getSubQualityID())));
             return item;
-        }).forEachOrdered((item) -> {
-            networkPropertyLinkStcList.add(item);
-        });
+        }).forEachOrdered(item -> networkPropertyLinkStcList.add(item));
 
         networkPropertyLinksStc.setNetworkPropertyLinkList(networkPropertyLinkListStc);
         networkPropertyLinks.setNetworkPropertyLinksStc(networkPropertyLinksStc);
 
-        NetworkPropertyLinksResponse res = (NetworkPropertyLinksResponse) template.marshalSendAndReceive(config.getUrl(), networkPropertyLinks,
-                new SoapActionCallback("Customer/NetworkPropertyLinks"));
+        NetworkPropertyLinksResponse res = (NetworkPropertyLinksResponse)this.template.marshalSendAndReceive(this.config.getUrl(), networkPropertyLinks, (WebServiceMessageCallback)new SoapActionCallback("Customer/NetworkPropertyLinks"));
         NetworkPropertyLinksResponseStc innerRes = res.getNetworkPropertyLinksResponseStc();
 
-        LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
+        LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
         if (isNotOk(innerRes.getStatus())) {
-            if (innerRes.getStatus() == 2002) {
-                networkPropertyLinksStc.setOperationType("Update");
-                res = (NetworkPropertyLinksResponse) template.marshalSendAndReceive(
-                        config.getUrl(), networkPropertyLinks,
-                        new SoapActionCallback("Customer/NetworkPropertyLinks"));
-                innerRes = res.getNetworkPropertyLinksResponseStc();
-                LOG.info("status: {}, message: {}", innerRes.getStatus(), innerRes.getTransactionErrors());
-                if (isNotOk(innerRes.getStatus())) {
-                    throw new OperationException(innerRes.getTransactionErrors());
-                }
-                return;
-            }
+            if (innerRes.getStatus() == -1 && networkPropertyLinksStc.getOperationType().equals("Insert")) {
+              networkPropertyLinksStc.setOperationType("Update");
+              res = (NetworkPropertyLinksResponse)this.template.marshalSendAndReceive(this.config
+                  .getUrl(), networkPropertyLinks, (WebServiceMessageCallback)new SoapActionCallback("Customer/NetworkPropertyLinks"));
+              innerRes = res.getNetworkPropertyLinksResponseStc();
+              LOG.info("status: {}, message: {}", Integer.valueOf(innerRes.getStatus()), innerRes.getTransactionErrors());
+              if (isNotOk(innerRes.getStatus()))
+                throw new OperationException(innerRes.getTransactionErrors()); 
+              return;
+            } 
             throw new OperationException(innerRes.getTransactionErrors());
-        }
+          } 
     }
 
     /**
@@ -652,32 +618,30 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
      *
      * @return
      */
-    private WebServiceTemplate buildWebServiceTemplate() throws Exception {
+    
+     private WebServiceTemplate buildWebServiceTemplate() throws Exception {
+        // Object object = new Object(this.template);
         NamespacePrefixMapper mapper = new NamespacePrefixMapper() {
-            @Override
             public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
-                return "cus";
+              return "";
             }
-        };
-        Map<String, Object> props = new HashMap();
+          };
+        // marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
+        Map<String, Object> props = new HashMap<>();
         props.put("jaxb.formatted.output", Boolean.TRUE);
-        props.put("com.sun.xml.bind.namespacePrefixMapper", mapper);
-
+        props.put("com.sun.xml.bind.namespacePrefixMapper", mapper );
         Jaxb2Marshaller m = new Jaxb2Marshaller();
         m.setMarshallerProperties(props);
         m.setContextPath("poweron.wsdl");
-
         WebServiceTemplate wsTemplate = getWebServiceTemplate();
-        wsTemplate.setMarshaller(m);
-        wsTemplate.setUnmarshaller(m);
-
-        if (config.useSSL() && null != config.getTrustStore() && null != config.getTrustStorePassword()) {
-            LOG.info("Application configured with SSL: {}, truststore: {}", config.useSSL(), config.getTrustStore().getFilename());
-            wsTemplate.setMessageSender(httpComponentsMessageSender());
-        }
-
+        wsTemplate.setMarshaller((Marshaller)m);
+        wsTemplate.setUnmarshaller((Unmarshaller)m);
+        if (this.config.useSSL() && null != this.config.getTrustStore() && null != this.config.getTrustStorePassword()) {
+          LOG.info("Application configured with SSL: {}, truststore: {}", Boolean.valueOf(this.config.useSSL()), this.config.getTrustStore().getFilename());
+          wsTemplate.setMessageSender((WebServiceMessageSender)httpComponentsMessageSender());
+        } 
         return wsTemplate;
-    }
+      }
 
     public HttpComponentsMessageSender httpComponentsMessageSender() throws Exception {
         HttpComponentsMessageSender httpComponentsMessageSender = new HttpComponentsMessageSender();
@@ -687,45 +651,43 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
     }
 
     public HttpClient httpClient() throws Exception {
-        return HttpClientBuilder.create().setSSLSocketFactory(sslConnectionSocketFactory())
-                .addInterceptorFirst(new RemoveSoapHeadersInterceptor()).build();
-    }
+        return (HttpClient)HttpClientBuilder.create().setSSLSocketFactory((LayeredConnectionSocketFactory)sslConnectionSocketFactory())
+          .addInterceptorFirst((HttpRequestInterceptor)new HttpComponentsMessageSender.RemoveSoapHeadersInterceptor()).build();
+      }
+
 
     public SSLConnectionSocketFactory sslConnectionSocketFactory() throws Exception {
         // NoopHostnameVerifier essentially turns hostname verification off as otherwise following error
         // is thrown: java.security.cert.CertificateException: No name matching localhost found
-        return new SSLConnectionSocketFactory(sslContext(), NoopHostnameVerifier.INSTANCE);
+        return new SSLConnectionSocketFactory(sslContext(), (HostnameVerifier)NoopHostnameVerifier.INSTANCE);
     }
 
     public SSLContext sslContext() throws Exception {
-        if (!config.isTrustAll()) {
-            LOG.info("Loading trust material from {}", config.getTrustStore().getURL());
-            return SSLContextBuilder.create()
-                    .loadTrustMaterial(config.getTrustStore().getURL(), config.getTrustStorePassword().toCharArray()).build();
-        }
+        if (!this.config.isTrustAll()) {
+          LOG.info("Loading trust material from {}", this.config.getTrustStore().getURL());
+          return SSLContextBuilder.create()
+            .loadTrustMaterial(this.config.getTrustStore().getURL(), this.config.getTrustStorePassword().toCharArray()).build();
+        } 
         LOG.warn("Application configured with \"Trust all\" SSL manager!");
-        TrustManager[] trustAllCerts = new TrustManager[]{
-            new X509TrustManager() {
-                @Override
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                }
+        TrustManager[] trustAllCerts =  new TrustManager[] { new X509TrustManager() {
 
-                @Override
-                public void checkClientTrusted(
-                        java.security.cert.X509Certificate[] certs, String authType) {
-                }
-
-                @Override
-                public void checkServerTrusted(
-                        java.security.cert.X509Certificate[] certs, String authType) {
-                }
+            @Override
+            public void checkClientTrusted(final X509Certificate[] chain, final String authType) {
             }
-        };
+
+            @Override
+            public void checkServerTrusted(final X509Certificate[] chain, final String authType) {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        } };
         SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        sc.init(null, trustAllCerts, new SecureRandom());
         return sc;
-    }
+      }
 
     /**
      * utility funciton to convert date string into XMLGregorianCalender instance
@@ -737,7 +699,7 @@ public class PowerOnSoapClient extends WebServiceGatewaySupport {
      */
     private XMLGregorianCalendar parseDateStringToXmlGregorianCalendar(String date, String format) throws DatatypeConfigurationException {
         return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
-    }
+      }
 
     /**
      * function to check power on response status code

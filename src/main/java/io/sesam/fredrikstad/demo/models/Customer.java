@@ -1,11 +1,8 @@
 package io.sesam.fredrikstad.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sesam.fredrikstad.demo.models.SesamEntity;
 
-/**
- *
- * @author 100tsa
- */
 public class Customer extends SesamEntity {
 
     @JsonProperty("CustomerNumber")
@@ -20,12 +17,8 @@ public class Customer extends SesamEntity {
     @JsonProperty("CustomerId")
     private String customerId;
 
-    public Customer() {
-        super();
-    }
-
     public String getCustomerNumber() {
-        return customerNumber;
+        return this.customerNumber;
     }
 
     public void setCustomerNumber(String customerNumber) {
@@ -33,7 +26,7 @@ public class Customer extends SesamEntity {
     }
 
     public String getForeName() {
-        return foreName;
+        return this.foreName;
     }
 
     public void setForeName(String foreName) {
@@ -41,7 +34,7 @@ public class Customer extends SesamEntity {
     }
 
     public String getSurName() {
-        return surName;
+        return this.surName;
     }
 
     public void setSurName(String surName) {
@@ -55,5 +48,4 @@ public class Customer extends SesamEntity {
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
-
 }
