@@ -1,6 +1,9 @@
 /target/
 !.mvn/wrapper/maven-wrapper.jar
 
+### Keystore ###
+src/main/resources/keystore.jks
+
 ### STS ###
 .apt_generated
 .classpath
