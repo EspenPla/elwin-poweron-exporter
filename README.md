@@ -6,7 +6,7 @@ PowerOn sink service used to move data from Elwin to PowerOn
 
 ```json
 {
-  "_id": "nn-poweron",
+  "_id": "poweron",
   "type": "system:microservice",
   "docker": {
     "environment": {
@@ -22,11 +22,11 @@ PowerOn sink service used to move data from Elwin to PowerOn
 
 ```json
 {
-  "_id": "nn-meter-number-poweron-endpoint",
+  "_id": "meter-number-poweron-endpoint",
   "type": "pipe",
   "source": {
     "type": "dataset",
-    "dataset": "nn-global-meterpoint"
+    "dataset": "global-meterpoint"
   },
   "sink": {
     "type": "json",
@@ -38,9 +38,6 @@ PowerOn sink service used to move data from Elwin to PowerOn
     "type": "dtl",
     "rules": {
       "default": [
-        ["comment", "input data for MeterNumbers SOAP endpoint"],
-        ["comment", "all Elwin fields mapped to PowerOn fields MeterNumbers request"],
-        ["comment", "see cd_meter_no.csv for more details"],
         ["filter",
           ["not", "_S._deleted"]
         ],
@@ -61,7 +58,6 @@ PowerOn sink service used to move data from Elwin to PowerOn
     "max_consecutive_write_errors": 10,
     "max_retries_per_entity": 2,
     "max_write_errors_in_retry_dataset": 100,
-    "use_dead_letter_dataset": false,
     "write_retry_delay": 1
   },
   "batch_size": 1,
