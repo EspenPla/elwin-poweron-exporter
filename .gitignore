@@ -3,6 +3,7 @@
 
 ### Keystore ###
 src/main/resources/keystore.jks
+src/main/resources/application.yml
 
 ### STS ###
 .apt_generated
